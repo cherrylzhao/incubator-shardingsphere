@@ -81,7 +81,7 @@ public final class MySQLClientTest {
     
     @Test
     public void assertExecuteUpdate() throws NoSuchFieldException, IllegalAccessException {
-        MySQLOKPacket expected = new MySQLOKPacket(0, 10, 0);
+        MySQLOKPacket expected = new MySQLOKPacket(0, 10, 0, false);
         ReflectionUtil.setFieldValueToClass(expected, "affectedRows", 10);
         mockChannelResponse(expected);
         ReflectionUtil.setFieldValueToClass(mysqlClient, "channel", channel);

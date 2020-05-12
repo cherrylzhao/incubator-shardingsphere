@@ -56,6 +56,8 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     
     private final TextProtocolBackendHandler textProtocolBackendHandler;
     
+    private final boolean inTransaction;
+    
     private volatile boolean isQuery;
     
     @Getter
@@ -67,6 +69,7 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     private int currentSequenceId;
     
     public MySQLComQueryPacketExecutor(final MySQLComQueryPacket comQueryPacket, final BackendConnection backendConnection) {
+        inTransaction = backendConnection.getStateHandler().isInTransaction();
         textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypes.getActualDatabaseType("MySQL"), comQueryPacket.getSql(), backendConnection);
     }
     
@@ -93,7 +96,7 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     }
     
     private MySQLOKPacket createUpdatePacket(final UpdateResponse updateResponse) {
-        return new MySQLOKPacket(1, updateResponse.getUpdateCount(), updateResponse.getLastInsertId());
+        return new MySQLOKPacket(1, updateResponse.getUpdateCount(), updateResponse.getLastInsertId(), inTransaction);
     }
     
     private Collection<DatabasePacket> createQueryPackets(final QueryResponse backendResponse) {

@@ -56,8 +56,8 @@ public final class MySQLOKPacket implements MySQLPacket {
         this(sequenceId, 0L, 0L, DEFAULT_STATUS_FLAG, 0, "");
     }
     
-    public MySQLOKPacket(final int sequenceId, final long affectedRows, final long lastInsertId) {
-        this(sequenceId, affectedRows, lastInsertId, DEFAULT_STATUS_FLAG, 0, "");
+    public MySQLOKPacket(final int sequenceId, final long affectedRows, final long lastInsertId, final boolean inTransaction) {
+        this(sequenceId, affectedRows, lastInsertId, inTransaction ? MySQLStatusFlag.SERVER_STATUS_IN_TRANS.getValue() : DEFAULT_STATUS_FLAG, 0, "");
     }
     
     public MySQLOKPacket(final MySQLPacketPayload payload) {
