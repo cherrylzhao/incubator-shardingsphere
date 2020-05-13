@@ -21,12 +21,15 @@ import lombok.SneakyThrows;
 import org.apache.shardingsphere.database.protocol.mysql.packet.command.query.binary.execute.MySQLComStmtExecutePacket;
 import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngine;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
+import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.ConnectionStateHandler;
+import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.ResourceSynchronizer;
 import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchema;
 import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -49,13 +52,20 @@ public class MySQLComStmtExecuteExecutorTest {
     @Mock
     private DatabaseCommunicationEngine databaseCommunicationEngine;
     
-    @Test
-    @SneakyThrows
-    public void assertIsErrorResponse() {
-        BackendConnection backendConnection = mock(BackendConnection.class);
+    @Mock
+    private BackendConnection backendConnection;
+    
+    @Before
+    public void setUp() {
         LogicSchema logicSchema = mock(LogicSchema.class);
         when(logicSchema.getRules()).thenReturn(Collections.emptyList());
         when(backendConnection.getLogicSchema()).thenReturn(logicSchema);
+        when(backendConnection.getStateHandler()).thenReturn(new ConnectionStateHandler(new ResourceSynchronizer()));
+    }
+    
+    @Test
+    @SneakyThrows
+    public void assertIsErrorResponse() {
         MySQLComStmtExecuteExecutor mysqlComStmtExecuteExecutor = new MySQLComStmtExecuteExecutor(mock(MySQLComStmtExecutePacket.class), backendConnection);
         FieldSetter.setField(mysqlComStmtExecuteExecutor, MySQLComStmtExecuteExecutor.class.getDeclaredField("databaseCommunicationEngine"), databaseCommunicationEngine);
         when(sqlException.getCause()).thenReturn(new Exception());
@@ -67,10 +77,6 @@ public class MySQLComStmtExecuteExecutorTest {
     @Test
     @SneakyThrows
     public void assertIsUpdateResponse() {
-        BackendConnection backendConnection = mock(BackendConnection.class);
-        LogicSchema logicSchema = mock(LogicSchema.class);
-        when(logicSchema.getRules()).thenReturn(Collections.emptyList());
-        when(backendConnection.getLogicSchema()).thenReturn(logicSchema);
         MySQLComStmtExecuteExecutor mysqlComStmtExecuteExecutor = new MySQLComStmtExecuteExecutor(mock(MySQLComStmtExecutePacket.class), backendConnection);
         FieldSetter.setField(mysqlComStmtExecuteExecutor, MySQLComStmtExecuteExecutor.class.getDeclaredField("databaseCommunicationEngine"), databaseCommunicationEngine);
         when(databaseCommunicationEngine.execute()).thenReturn(new UpdateResponse());
@@ -81,10 +87,6 @@ public class MySQLComStmtExecuteExecutorTest {
     @Test
     @SneakyThrows
     public void assertIsQuery() {
-        BackendConnection backendConnection = mock(BackendConnection.class);
-        LogicSchema logicSchema = mock(LogicSchema.class);
-        when(logicSchema.getRules()).thenReturn(Collections.emptyList());
-        when(backendConnection.getLogicSchema()).thenReturn(logicSchema);
         MySQLComStmtExecuteExecutor mysqlComStmtExecuteExecutor = new MySQLComStmtExecuteExecutor(mock(MySQLComStmtExecutePacket.class), backendConnection);
         FieldSetter.setField(mysqlComStmtExecuteExecutor, MySQLComStmtExecuteExecutor.class.getDeclaredField("databaseCommunicationEngine"), databaseCommunicationEngine);
         when(databaseCommunicationEngine.execute()).thenReturn(new QueryResponse(Collections.singletonList(mock(QueryHeader.class))));

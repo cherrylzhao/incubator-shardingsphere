@@ -27,6 +27,8 @@ import org.apache.shardingsphere.database.protocol.mysql.packet.command.query.te
 import org.apache.shardingsphere.database.protocol.mysql.packet.command.query.text.query.MySQLComQueryPacket;
 import org.apache.shardingsphere.database.protocol.packet.CommandPacket;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
+import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.ConnectionStateHandler;
+import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.ResourceSynchronizer;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchema;
 import org.apache.shardingsphere.shardingproxy.frontend.mysql.command.admin.initdb.MySQLComInitDbExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.mysql.command.admin.ping.MySQLComPingExecutor;
@@ -50,6 +52,7 @@ public final class MySQLCommandExecutorFactoryTest {
     public void assertNewInstance() {
         BackendConnection backendConnection = mock(BackendConnection.class);
         when(backendConnection.getLogicSchema()).thenReturn(mock(LogicSchema.class));
+        when(backendConnection.getStateHandler()).thenReturn(new ConnectionStateHandler(new ResourceSynchronizer()));
         assertThat(MySQLCommandExecutorFactory.newInstance(MySQLCommandPacketType.COM_QUIT,
             mock(CommandPacket.class), backendConnection), instanceOf(MySQLComQuitExecutor.class));
         assertThat(MySQLCommandExecutorFactory.newInstance(MySQLCommandPacketType.COM_INIT_DB,
