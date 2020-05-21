@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.shardingproxy.backend.text;
+package org.apache.shardingsphere.shardingproxy.backend.binary;
 
 import com.google.common.base.Strings;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.shardingsphere.shardingproxy.backend.binary.admin.BinaryBroadcastBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.binary.query.BinaryQueryBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
-import org.apache.shardingsphere.shardingproxy.backend.text.admin.BroadcastBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.admin.ShowDatabasesBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.admin.UnicastBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.admin.UseDatabaseBackendHandler;
-import org.apache.shardingsphere.shardingproxy.backend.text.query.QueryBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.ShardingCTLBackendHandlerFactory;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.utils.SCTLUtils;
 import org.apache.shardingsphere.shardingproxy.backend.text.transaction.SkipBackendHandler;
@@ -44,21 +45,24 @@ import org.apache.shardingsphere.sql.parser.sql.statement.tcl.SetAutoCommitState
 import org.apache.shardingsphere.sql.parser.sql.statement.tcl.TCLStatement;
 import org.apache.shardingsphere.transaction.core.TransactionOperationType;
 
+import java.util.List;
+
 /**
  * Text protocol backend handler factory.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TextProtocolBackendHandlerFactory {
+public final class BinaryProtocolBackendHandlerFactory {
     
     /**
      * Create new instance of text protocol backend handler.
      *
      * @param databaseType database type
      * @param sql SQL to be executed
+     * @param parameters parameters
      * @param backendConnection backend connection
      * @return instance of text protocol backend handler
      */
-    public static BackendHandler newInstance(final DatabaseType databaseType, final String sql, final BackendConnection backendConnection) {
+    public static BackendHandler newInstance(final DatabaseType databaseType, final String sql, final List<Object> parameters, final BackendConnection backendConnection) {
         if (Strings.isNullOrEmpty(sql)) {
             return new SkipBackendHandler();
         }
@@ -66,17 +70,17 @@ public final class TextProtocolBackendHandlerFactory {
         if (trimSql.toUpperCase().startsWith(ShardingCTLBackendHandlerFactory.SCTL)) {
             return ShardingCTLBackendHandlerFactory.newInstance(trimSql, backendConnection);
         }
-        SQLStatement sqlStatement = new SQLParserEngine(databaseType.getName()).parse(sql, false);
+        SQLStatement sqlStatement = new SQLParserEngine(databaseType.getName()).parse(sql, true);
         if (sqlStatement instanceof TCLStatement) {
-            return createTCLBackendHandler(sql, (TCLStatement) sqlStatement, backendConnection);
+            return createTCLBackendHandler(sql, parameters, (TCLStatement) sqlStatement, backendConnection);
         }
         if (sqlStatement instanceof DALStatement) {
-            return createDALBackendHandler((DALStatement) sqlStatement, sql, backendConnection);
+            return createDALBackendHandler((DALStatement) sqlStatement, sql, parameters, backendConnection);
         }
-        return new QueryBackendHandler(sql, backendConnection);
+        return new BinaryQueryBackendHandler(sql, parameters, backendConnection);
     }
     
-    private static BackendHandler createTCLBackendHandler(final String sql, final TCLStatement tclStatement, final BackendConnection backendConnection) {
+    private static BackendHandler createTCLBackendHandler(final String sql, final List<Object> parameters, final TCLStatement tclStatement, final BackendConnection backendConnection) {
         if (tclStatement instanceof BeginTransactionStatement) {
             return new TransactionBackendHandler(TransactionOperationType.BEGIN, backendConnection);
         }
@@ -92,10 +96,10 @@ public final class TextProtocolBackendHandlerFactory {
         if (tclStatement instanceof RollbackStatement) {
             return new TransactionBackendHandler(TransactionOperationType.ROLLBACK, backendConnection);
         }
-        return new BroadcastBackendHandler(sql, backendConnection);
+        return new BinaryBroadcastBackendHandler(sql, parameters, backendConnection);
     }
     
-    private static BackendHandler createDALBackendHandler(final DALStatement dalStatement, final String sql, final BackendConnection backendConnection) {
+    private static BackendHandler createDALBackendHandler(final DALStatement dalStatement, final String sql, final List<Object> parameters, final BackendConnection backendConnection) {
         if (dalStatement instanceof UseStatement) {
             return new UseDatabaseBackendHandler((UseStatement) dalStatement, backendConnection);
         }
@@ -104,7 +108,7 @@ public final class TextProtocolBackendHandlerFactory {
         }
         // FIXME: There are three SetStatement class.
         if (dalStatement instanceof SetStatement) {
-            return new BroadcastBackendHandler(sql, backendConnection);
+            return new BinaryBroadcastBackendHandler(sql, parameters, backendConnection);
         }
         return new UnicastBackendHandler(sql, backendConnection);
     }

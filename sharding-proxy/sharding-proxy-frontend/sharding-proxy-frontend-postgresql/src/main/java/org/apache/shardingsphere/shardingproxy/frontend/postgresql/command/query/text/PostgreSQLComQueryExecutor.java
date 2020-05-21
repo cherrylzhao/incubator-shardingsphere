@@ -31,7 +31,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorRespo
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandlerFactory;
 import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.shardingproxy.frontend.api.QueryCommandExecutor;
@@ -50,7 +50,7 @@ import java.util.Optional;
  */
 public final class PostgreSQLComQueryExecutor implements QueryCommandExecutor {
     
-    private final TextProtocolBackendHandler textProtocolBackendHandler;
+    private final BackendHandler textProtocolBackendHandler;
     
     private volatile boolean isQuery;
     
@@ -82,7 +82,7 @@ public final class PostgreSQLComQueryExecutor implements QueryCommandExecutor {
     }
     
     private PostgreSQLCommandCompletePacket createUpdatePacket(final UpdateResponse updateResponse) {
-        return new PostgreSQLCommandCompletePacket();
+        return new PostgreSQLCommandCompletePacket(updateResponse.getType(), updateResponse.getUpdateCount());
     }
     
     private Optional<PostgreSQLRowDescriptionPacket> createQueryPacket(final QueryResponse queryResponse) {

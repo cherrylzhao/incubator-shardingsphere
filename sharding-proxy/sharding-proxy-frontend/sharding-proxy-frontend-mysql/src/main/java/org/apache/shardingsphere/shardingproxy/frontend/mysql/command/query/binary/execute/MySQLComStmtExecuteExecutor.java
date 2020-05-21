@@ -28,8 +28,7 @@ import org.apache.shardingsphere.database.protocol.mysql.packet.generic.MySQLEof
 import org.apache.shardingsphere.database.protocol.mysql.packet.generic.MySQLErrPacket;
 import org.apache.shardingsphere.database.protocol.mysql.packet.generic.MySQLOKPacket;
 import org.apache.shardingsphere.database.protocol.packet.DatabasePacket;
-import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngine;
-import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngineFactory;
+import org.apache.shardingsphere.shardingproxy.backend.binary.BinaryProtocolBackendHandlerFactory;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
@@ -37,9 +36,11 @@ import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.shardingproxy.frontend.api.QueryCommandExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.mysql.MySQLErrPacketFactory;
+import org.apache.shardingsphere.underlying.common.database.type.DatabaseTypes;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
     
-    private final DatabaseCommunicationEngine databaseCommunicationEngine;
+    private final BackendHandler binaryProtocolBackendHandler;
     
     private volatile boolean isQuery;
     
@@ -62,8 +63,8 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
     private int currentSequenceId;
     
     public MySQLComStmtExecuteExecutor(final MySQLComStmtExecutePacket comStmtExecutePacket, final BackendConnection backendConnection) {
-        databaseCommunicationEngine = DatabaseCommunicationEngineFactory.getInstance().newBinaryProtocolInstance(
-                backendConnection.getLogicSchema(), comStmtExecutePacket.getSql(), comStmtExecutePacket.getParameters(), backendConnection);
+        binaryProtocolBackendHandler =
+            BinaryProtocolBackendHandlerFactory.newInstance(DatabaseTypes.getActualDatabaseType("MySQL"), comStmtExecutePacket.getSql(), comStmtExecutePacket.getParameters(), backendConnection);
     }
     
     @Override
@@ -71,7 +72,7 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
         if (ShardingProxyContext.getInstance().isCircuitBreak()) {
             return Collections.singletonList(new MySQLErrPacket(1, CommonErrorCode.CIRCUIT_BREAK_MODE));
         }
-        BackendResponse backendResponse = databaseCommunicationEngine.execute();
+        BackendResponse backendResponse = binaryProtocolBackendHandler.execute();
         if (backendResponse instanceof ErrorResponse) {
             isErrorResponse = true;
             return Collections.singletonList(createErrorPacket(((ErrorResponse) backendResponse).getCause()));
@@ -115,12 +116,12 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
     
     @Override
     public boolean next() throws SQLException {
-        return databaseCommunicationEngine.next();
+        return binaryProtocolBackendHandler.next();
     }
     
     @Override
     public MySQLPacket getQueryData() throws SQLException {
-        QueryData queryData = databaseCommunicationEngine.getQueryData();
+        QueryData queryData = binaryProtocolBackendHandler.getQueryData();
         return new MySQLBinaryResultSetRowPacket(++currentSequenceId, queryData.getData(), getMySQLColumnTypes(queryData));
     }
     

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.shardingproxy.backend.text.admin;
+package org.apache.shardingsphere.shardingproxy.backend.binary.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngine;
@@ -28,6 +28,7 @@ import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
 import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Backend handler for unicast.
@@ -38,6 +39,8 @@ public final class UnicastBackendHandler implements BackendHandler {
     private final DatabaseCommunicationEngineFactory databaseCommunicationEngineFactory = DatabaseCommunicationEngineFactory.getInstance();
     
     private final String sql;
+    
+    private final List<Object> parameters;
     
     private final BackendConnection backendConnection;
     
@@ -51,7 +54,7 @@ public final class UnicastBackendHandler implements BackendHandler {
             logicSchema = LogicSchemas.getInstance().getLogicSchemas().values().iterator().next();
             backendConnection.setCurrentSchema(logicSchema.getName());
         }
-        databaseCommunicationEngine = databaseCommunicationEngineFactory.newTextProtocolInstance(logicSchema, sql, backendConnection);
+        databaseCommunicationEngine = databaseCommunicationEngineFactory.newBinaryProtocolInstance(logicSchema, sql, parameters, backendConnection);
         return databaseCommunicationEngine.execute();
     }
     

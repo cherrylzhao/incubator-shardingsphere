@@ -15,29 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.shardingproxy.backend.text.admin;
+package org.apache.shardingsphere.shardingproxy.backend.binary.query;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngine;
 import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngineFactory;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
+import org.apache.shardingsphere.shardingproxy.backend.exception.NoDatabaseSelectedException;
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
+import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
-import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchema;
-import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
 import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
- * Backend handler for unicast.
+ * Backend handler with query.
  */
 @RequiredArgsConstructor
-public final class UnicastBackendHandler implements BackendHandler {
+public final class BinaryQueryBackendHandler implements BackendHandler {
     
     private final DatabaseCommunicationEngineFactory databaseCommunicationEngineFactory = DatabaseCommunicationEngineFactory.getInstance();
     
     private final String sql;
+    
+    private final List<Object> parameters;
     
     private final BackendConnection backendConnection;
     
@@ -45,13 +48,10 @@ public final class UnicastBackendHandler implements BackendHandler {
     
     @Override
     public BackendResponse execute() {
-        // TODO we should remove set default logicSchema after parser can recognize all DAL broadcast SQL.
-        LogicSchema logicSchema = backendConnection.getLogicSchema();
-        if (null == logicSchema) {
-            logicSchema = LogicSchemas.getInstance().getLogicSchemas().values().iterator().next();
-            backendConnection.setCurrentSchema(logicSchema.getName());
+        if (null == backendConnection.getLogicSchema()) {
+            return new ErrorResponse(new NoDatabaseSelectedException());
         }
-        databaseCommunicationEngine = databaseCommunicationEngineFactory.newTextProtocolInstance(logicSchema, sql, backendConnection);
+        databaseCommunicationEngine = databaseCommunicationEngineFactory.newBinaryProtocolInstance(backendConnection.getLogicSchema(), sql, parameters, backendConnection);
         return databaseCommunicationEngine.execute();
     }
     

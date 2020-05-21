@@ -23,9 +23,9 @@ import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import java.sql.SQLException;
 
 /**
- * Text protocol backend handler.
+ * Backend handler.
  */
-public interface TextProtocolBackendHandler {
+public interface BackendHandler {
     
     /**
      * Execute command.

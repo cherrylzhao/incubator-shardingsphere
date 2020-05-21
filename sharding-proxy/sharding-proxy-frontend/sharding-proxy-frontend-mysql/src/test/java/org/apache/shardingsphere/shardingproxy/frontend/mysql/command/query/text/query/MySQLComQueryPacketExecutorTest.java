@@ -20,7 +20,7 @@ package org.apache.shardingsphere.shardingproxy.frontend.mysql.command.query.tex
 import lombok.SneakyThrows;
 import org.apache.shardingsphere.database.protocol.mysql.packet.command.query.text.query.MySQLComQueryPacket;
 import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class MySQLComQueryPacketExecutorTest {
     private SQLException sqlException;
     
     @Mock
-    private TextProtocolBackendHandler textProtocolBackendHandler;
+    private BackendHandler textProtocolBackendHandler;
     
     @Test
     @SneakyThrows

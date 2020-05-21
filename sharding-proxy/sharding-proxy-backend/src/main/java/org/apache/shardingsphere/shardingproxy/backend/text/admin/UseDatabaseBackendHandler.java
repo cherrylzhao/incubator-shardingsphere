@@ -27,7 +27,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorRespo
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 
 import java.util.Collection;
@@ -36,7 +36,7 @@ import java.util.Collection;
  * Use database backend handler.
  */
 @RequiredArgsConstructor
-public final class UseDatabaseBackendHandler implements TextProtocolBackendHandler {
+public final class UseDatabaseBackendHandler implements BackendHandler {
     
     private final UseStatement useStatement;
     

@@ -25,7 +25,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorRespo
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.exception.InvalidShardingCTLFormatException;
 import org.apache.shardingsphere.underlying.executor.context.ExecutionUnit;
 
@@ -39,7 +39,7 @@ import java.util.Optional;
  * Sharding CTL explain backend handler.
  */
 @RequiredArgsConstructor
-public final class ShardingCTLExplainBackendHandler implements TextProtocolBackendHandler {
+public final class ShardingCTLExplainBackendHandler implements BackendHandler {
     
     private final String sql;
     

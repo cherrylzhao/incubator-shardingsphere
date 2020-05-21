@@ -69,7 +69,7 @@ public final class PostgreSQLCommandExecuteEngine implements CommandExecuteEngin
     
     @Override
     public Optional<DatabasePacket> getOtherPacket() {
-        return Optional.of(new PostgreSQLReadyForQueryPacket());
+        return Optional.of(new PostgreSQLReadyForQueryPacket(false));
     }
     
     @Override
@@ -77,11 +77,11 @@ public final class PostgreSQLCommandExecuteEngine implements CommandExecuteEngin
                                final BackendConnection backendConnection, final QueryCommandExecutor queryCommandExecutor, final int headerPackagesCount) throws SQLException {
         if (queryCommandExecutor.isQuery() && !context.channel().isActive()) {
             context.write(new PostgreSQLCommandCompletePacket());
-            context.write(new PostgreSQLReadyForQueryPacket());
+            context.write(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
             return;
         }
         if (queryCommandExecutor.isErrorResponse()) {
-            context.write(new PostgreSQLReadyForQueryPacket());
+            context.write(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
             return;
         }
         int count = 0;
@@ -100,6 +100,6 @@ public final class PostgreSQLCommandExecuteEngine implements CommandExecuteEngin
             }
         }
         context.write(new PostgreSQLCommandCompletePacket());
-        context.write(new PostgreSQLReadyForQueryPacket());
+        context.write(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
     }
 }

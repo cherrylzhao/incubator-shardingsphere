@@ -25,7 +25,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.underlying.merge.result.MergedResult;
 
@@ -39,7 +39,7 @@ import java.util.LinkedList;
  * Show databases backend handler.
  */
 @RequiredArgsConstructor
-public final class ShowDatabasesBackendHandler implements TextProtocolBackendHandler {
+public final class ShowDatabasesBackendHandler implements BackendHandler {
     
     private final BackendConnection backendConnection;
     

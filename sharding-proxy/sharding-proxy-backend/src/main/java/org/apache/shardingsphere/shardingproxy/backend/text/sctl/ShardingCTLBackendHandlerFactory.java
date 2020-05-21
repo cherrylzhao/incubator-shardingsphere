@@ -18,7 +18,7 @@
 package org.apache.shardingsphere.shardingproxy.backend.text.sctl;
 
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.explain.ShardingCTLExplainBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.hint.ShardingCTLHintBackendHandler;
 import org.apache.shardingsphere.shardingproxy.backend.text.sctl.set.ShardingCTLSetBackendHandler;
@@ -46,7 +46,7 @@ public final class ShardingCTLBackendHandlerFactory {
      * @param backendConnection backend connection
      * @return instance of sharding CTL backend handler
      */
-    public static TextProtocolBackendHandler newInstance(final String sql, final BackendConnection backendConnection) {
+    public static BackendHandler newInstance(final String sql, final BackendConnection backendConnection) {
         if (sql.toUpperCase().startsWith(SCTL_SET)) {
             return new ShardingCTLSetBackendHandler(sql, backendConnection);
         }

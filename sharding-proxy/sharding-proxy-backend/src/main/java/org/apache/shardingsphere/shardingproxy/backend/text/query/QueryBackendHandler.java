@@ -25,7 +25,7 @@ import org.apache.shardingsphere.shardingproxy.backend.exception.NoDatabaseSelec
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
 import java.sql.SQLException;
 
@@ -33,7 +33,7 @@ import java.sql.SQLException;
  * Backend handler with query.
  */
 @RequiredArgsConstructor
-public final class QueryBackendHandler implements TextProtocolBackendHandler {
+public final class QueryBackendHandler implements BackendHandler {
     
     private final DatabaseCommunicationEngineFactory databaseCommunicationEngineFactory = DatabaseCommunicationEngineFactory.getInstance();
     

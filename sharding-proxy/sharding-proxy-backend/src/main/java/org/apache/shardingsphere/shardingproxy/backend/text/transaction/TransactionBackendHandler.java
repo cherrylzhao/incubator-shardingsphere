@@ -23,7 +23,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 import org.apache.shardingsphere.transaction.core.TransactionOperationType;
 
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ import java.sql.SQLFeatureNotSupportedException;
 /**
  * Do transaction operation.
  */
-public final class TransactionBackendHandler implements TextProtocolBackendHandler {
+public final class TransactionBackendHandler implements BackendHandler {
     
     private final TransactionOperationType operationType;
     
@@ -66,7 +66,9 @@ public final class TransactionBackendHandler implements TextProtocolBackendHandl
             default:
                 throw new SQLFeatureNotSupportedException(operationType.name());
         }
-        return new UpdateResponse();
+        UpdateResponse result = new UpdateResponse();
+        result.setType(operationType.name());
+        return result;
     }
     
     @Override

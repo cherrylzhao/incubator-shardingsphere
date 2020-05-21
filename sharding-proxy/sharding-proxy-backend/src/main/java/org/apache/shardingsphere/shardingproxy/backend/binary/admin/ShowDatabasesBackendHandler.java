@@ -15,61 +15,50 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.shardingproxy.backend.text.sctl.show;
+package org.apache.shardingsphere.shardingproxy.backend.binary.admin;
 
-import org.apache.shardingsphere.sharding.merge.dal.common.MultipleLocalDataMergedResult;
+import lombok.RequiredArgsConstructor;
+import org.apache.shardingsphere.sharding.merge.dal.common.SingleLocalDataMergedResult;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
-import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryHeader;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryResponse;
+import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
 import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
-import org.apache.shardingsphere.shardingproxy.backend.text.sctl.exception.InvalidShardingCTLFormatException;
-import org.apache.shardingsphere.shardingproxy.backend.text.sctl.exception.UnsupportedShardingCTLTypeException;
+import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.underlying.merge.result.MergedResult;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
+import java.util.LinkedList;
 
 /**
- * Sharding CTL show backend handler.
+ * Show databases backend handler.
  */
-public final class ShardingCTLShowBackendHandler implements BackendHandler {
-    
-    private final String sql;
+@RequiredArgsConstructor
+public final class ShowDatabasesBackendHandler implements BackendHandler {
     
     private final BackendConnection backendConnection;
     
     private MergedResult mergedResult;
     
-    public ShardingCTLShowBackendHandler(final String sql, final BackendConnection backendConnection) {
-        this.sql = sql.toUpperCase().trim();
-        this.backendConnection = backendConnection;
-    }
-    
+    @SuppressWarnings("unchecked")
     @Override
     public BackendResponse execute() {
-        Optional<ShardingCTLShowStatement> showStatement = new ShardingCTLShowParser(sql).doParse();
-        if (!showStatement.isPresent()) {
-            return new ErrorResponse(new InvalidShardingCTLFormatException(sql));
-        }
-        switch (showStatement.get().getValue()) {
-            case "TRANSACTION_TYPE":
-                return createResponsePackets("TRANSACTION_TYPE", backendConnection.getTransactionType().name());
-            case "CACHED_CONNECTIONS":
-                return createResponsePackets("CACHED_CONNECTIONS", backendConnection.getConnectionSize());
-            default:
-                return new ErrorResponse(new UnsupportedShardingCTLTypeException(sql));
-        }
+        mergedResult = new SingleLocalDataMergedResult(getSchemaNames());
+        return new QueryResponse(Collections.singletonList(new QueryHeader("information_schema", "SCHEMATA", "Database", "SCHEMA_NAME", 100, Types.VARCHAR, 0, false, false, false, false)));
     }
     
-    private BackendResponse createResponsePackets(final String columnName, final Object... values) {
-        mergedResult = new MultipleLocalDataMergedResult(Collections.singletonList(Arrays.asList(values)));
-        return new QueryResponse(Collections.singletonList(new QueryHeader("", "", columnName, columnName, 100, Types.VARCHAR, 0, false, false, false, false)));
+    private Collection getSchemaNames() {
+        Collection<String> result = new LinkedList<>(LogicSchemas.getInstance().getSchemaNames());
+        Collection<String> authorizedSchemas = ShardingProxyContext.getInstance().getAuthentication().getUsers().get(backendConnection.getUserName()).getAuthorizedSchemas();
+        if (!authorizedSchemas.isEmpty()) {
+            result.retainAll(authorizedSchemas);
+        }
+        return result;
     }
     
     @Override

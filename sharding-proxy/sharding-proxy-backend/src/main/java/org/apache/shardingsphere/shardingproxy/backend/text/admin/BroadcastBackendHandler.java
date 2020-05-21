@@ -25,7 +25,7 @@ import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorRespo
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -34,7 +34,7 @@ import java.util.LinkedList;
  * Backend handler for broadcast.
  */
 @RequiredArgsConstructor
-public final class BroadcastBackendHandler implements TextProtocolBackendHandler {
+public final class BroadcastBackendHandler implements BackendHandler {
     
     private final DatabaseCommunicationEngineFactory databaseCommunicationEngineFactory = DatabaseCommunicationEngineFactory.getInstance();
     

@@ -15,53 +15,60 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.shardingproxy.backend.text.admin;
+package org.apache.shardingsphere.shardingproxy.backend.binary.admin;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngine;
 import org.apache.shardingsphere.shardingproxy.backend.communication.DatabaseCommunicationEngineFactory;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
+import org.apache.shardingsphere.shardingproxy.backend.response.error.ErrorResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
-import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchema;
+import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
 import org.apache.shardingsphere.shardingproxy.backend.schema.LogicSchemas;
 import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
-import java.sql.SQLException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Backend handler for unicast.
+ * Backend handler for broadcast.
  */
 @RequiredArgsConstructor
-public final class UnicastBackendHandler implements BackendHandler {
+public final class BinaryBroadcastBackendHandler implements BackendHandler {
     
     private final DatabaseCommunicationEngineFactory databaseCommunicationEngineFactory = DatabaseCommunicationEngineFactory.getInstance();
     
     private final String sql;
     
-    private final BackendConnection backendConnection;
+    private final List<Object> parameters;
     
-    private DatabaseCommunicationEngine databaseCommunicationEngine;
+    private final BackendConnection backendConnection;
     
     @Override
     public BackendResponse execute() {
-        // TODO we should remove set default logicSchema after parser can recognize all DAL broadcast SQL.
-        LogicSchema logicSchema = backendConnection.getLogicSchema();
-        if (null == logicSchema) {
-            logicSchema = LogicSchemas.getInstance().getLogicSchemas().values().iterator().next();
-            backendConnection.setCurrentSchema(logicSchema.getName());
+        Collection<BackendResponse> responses = new LinkedList<>();
+        String originalSchema = backendConnection.getSchemaName();
+        for (String each : LogicSchemas.getInstance().getSchemaNames()) {
+            backendConnection.setCurrentSchema(each);
+            responses.add(databaseCommunicationEngineFactory.newBinaryProtocolInstance(LogicSchemas.getInstance().getLogicSchema(each), sql, parameters, backendConnection).execute());
         }
-        databaseCommunicationEngine = databaseCommunicationEngineFactory.newTextProtocolInstance(logicSchema, sql, backendConnection);
-        return databaseCommunicationEngine.execute();
+        backendConnection.setCurrentSchema(originalSchema);
+        for (BackendResponse each : responses) {
+            if (each instanceof ErrorResponse) {
+                return each;
+            }
+        }
+        return new UpdateResponse();
     }
     
     @Override
-    public boolean next() throws SQLException {
-        return databaseCommunicationEngine.next();
+    public boolean next() {
+        return false;
     }
     
     @Override
-    public QueryData getQueryData() throws SQLException {
-        return databaseCommunicationEngine.getQueryData();
+    public QueryData getQueryData() {
+        return null;
     }
 }

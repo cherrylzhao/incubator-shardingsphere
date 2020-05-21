@@ -20,12 +20,12 @@ package org.apache.shardingsphere.shardingproxy.backend.text.transaction;
 import org.apache.shardingsphere.shardingproxy.backend.response.BackendResponse;
 import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryData;
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
-import org.apache.shardingsphere.shardingproxy.backend.text.TextProtocolBackendHandler;
+import org.apache.shardingsphere.shardingproxy.backend.text.BackendHandler;
 
 /**
  * Skip backend handler.
  */
-public final class SkipBackendHandler implements TextProtocolBackendHandler {
+public final class SkipBackendHandler implements BackendHandler {
     
     @Override
     public BackendResponse execute() {
