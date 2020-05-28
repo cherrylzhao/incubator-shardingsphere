@@ -53,7 +53,7 @@ public final class QueryHeader {
 
     private final boolean signed;
 
-    private final boolean primaryKey;
+    private boolean primaryKey;
 
     private final boolean notNull;
 
@@ -82,10 +82,13 @@ public final class QueryHeader {
             Collection<String> logicTableNames = logicSchema.getShardingRule().getLogicTableNames(actualTableName);
             table = logicTableNames.isEmpty() ? "" : logicTableNames.iterator().next();
             TableMetaData tableMetaData = logicSchema.getMetaData().getSchema().get(table);
-            primaryKey = null != tableMetaData && tableMetaData.getColumns().get(resultSetMetaData.getColumnName(columnIndex).toLowerCase()).isPrimaryKey();
+            if (null != tableMetaData && null != columnName) {
+                primaryKey = tableMetaData.getColumns().get(columnName).isPrimaryKey();
+            }
+//            primaryKey = null != tableMetaData && tableMetaData.getColumns().get(resultSetMetaData.getColumnName(columnIndex).toLowerCase()).isPrimaryKey();
         } else {
             table = actualTableName;
-            primaryKey = false;
+//            primaryKey = false;
         }
     }
     

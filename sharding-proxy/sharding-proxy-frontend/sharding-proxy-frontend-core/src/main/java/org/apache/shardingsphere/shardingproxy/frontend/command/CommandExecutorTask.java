@@ -28,6 +28,7 @@ import org.apache.shardingsphere.database.protocol.payload.PacketPayload;
 import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
 import org.apache.shardingsphere.shardingproxy.frontend.api.CommandExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.api.QueryCommandExecutor;
+import org.apache.shardingsphere.shardingproxy.frontend.api.SyncExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.engine.CommandExecuteEngine;
 import org.apache.shardingsphere.shardingproxy.frontend.spi.DatabaseProtocolFrontendEngine;
 import org.apache.shardingsphere.underlying.common.hook.RootInvokeHook;
@@ -99,6 +100,9 @@ public final class CommandExecutorTask implements Runnable {
         }
         if (commandExecutor instanceof QueryCommandExecutor) {
             commandExecuteEngine.writeQueryData(context, backendConnection, (QueryCommandExecutor) commandExecutor, responsePackets.size());
+            return ((QueryCommandExecutor) commandExecutor).isSync();
+        }
+        if (commandExecutor instanceof SyncExecutor) {
             return true;
         }
         return databaseProtocolFrontendEngine.getFrontendContext().isFlushForPerCommandPacket();

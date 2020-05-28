@@ -41,6 +41,15 @@ public interface QueryCommandExecutor extends CommandExecutor {
     boolean isQuery();
     
     /**
+     * whether sync data or not.
+     *
+     * @return true or false
+     */
+    default boolean isSync() {
+        return true;
+    }
+    
+    /**
      * Goto next result value.
      *
      * @return has more result value or not

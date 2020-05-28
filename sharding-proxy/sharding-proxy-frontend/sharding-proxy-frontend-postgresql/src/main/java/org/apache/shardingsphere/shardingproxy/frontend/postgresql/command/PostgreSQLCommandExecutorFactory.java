@@ -65,7 +65,7 @@ public final class PostgreSQLCommandExecutorFactory {
             case EXECUTE:
                 return new PostgreSQLComExecuteExecutor();
             case SYNC:
-                return new PostgreSQLComSyncExecutor();
+                return new PostgreSQLComSyncExecutor(backendConnection);
             case TERMINATE:
                 return new PostgreSQLComTerminationExecutor();
             default:

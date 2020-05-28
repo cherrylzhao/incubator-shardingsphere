@@ -17,8 +17,12 @@
 
 package org.apache.shardingsphere.shardingproxy.frontend.postgresql.command.query.binary.sync;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.database.protocol.packet.DatabasePacket;
+import org.apache.shardingsphere.database.protocol.postgresql.packet.generic.PostgreSQLReadyForQueryPacket;
+import org.apache.shardingsphere.shardingproxy.backend.communication.jdbc.connection.BackendConnection;
 import org.apache.shardingsphere.shardingproxy.frontend.api.CommandExecutor;
+import org.apache.shardingsphere.shardingproxy.frontend.api.SyncExecutor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,10 +30,13 @@ import java.util.Collections;
 /**
  * Command sync executor for PostgreSQL.
  */
-public final class PostgreSQLComSyncExecutor implements CommandExecutor {
+@RequiredArgsConstructor
+public final class PostgreSQLComSyncExecutor implements CommandExecutor, SyncExecutor {
+    
+    private final BackendConnection backendConnection;
     
     @Override
     public Collection<DatabasePacket> execute() {
-        return Collections.emptyList();
+        return Collections.singletonList(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
     }
 }

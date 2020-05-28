@@ -32,24 +32,35 @@ public final class PostgreSQLCommandCompletePacket implements PostgreSQLPacket {
     
     private final String sqlCommand;
     
-    private final long rowCount;
+    private final long rows;
+    
+    private final long insertCount;
     
     public PostgreSQLCommandCompletePacket() {
         sqlCommand = "";
-        rowCount = 0;
+        rows = 0;
+        insertCount = 0;
     }
     
-    public PostgreSQLCommandCompletePacket(final String sqlCommand, final long rowCount) {
+    public PostgreSQLCommandCompletePacket(final String sqlCommand, final long rows, final long inertCount) {
         this.sqlCommand = sqlCommand;
-        this.rowCount = rowCount;
+        this.rows = rows;
+        this.insertCount = inertCount;
     }
     
     @Override
     public void write(final PostgreSQLPacketPayload payload) {
-        if (0 == rowCount) {
-            payload.writeStringNul(sqlCommand);
-        } else {
-            payload.writeStringNul(sqlCommand + " " + rowCount);
+        switch (sqlCommand) {
+            case "INSERT":
+                payload.writeStringNul(sqlCommand + " 0 1");
+                break;
+            case "UPDATE":
+            case "DELETE":
+            case "SELECT":
+                payload.writeStringNul(sqlCommand + " " + rows);
+                break;
+            default:
+                payload.writeStringNul(sqlCommand);
         }
     }
 }

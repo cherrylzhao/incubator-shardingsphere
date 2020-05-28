@@ -35,6 +35,7 @@ import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.shardingproxy.frontend.api.CommandExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.api.QueryCommandExecutor;
 import org.apache.shardingsphere.shardingproxy.frontend.engine.CommandExecuteEngine;
+import org.apache.shardingsphere.shardingproxy.frontend.postgresql.command.query.text.PostgreSQLComQueryExecutor;
 import org.apache.shardingsphere.underlying.common.config.properties.ConfigurationPropertyKey;
 
 import java.sql.SQLException;
@@ -99,7 +100,11 @@ public final class PostgreSQLCommandExecuteEngine implements CommandExecuteEngin
                 count = 0;
             }
         }
-        context.write(new PostgreSQLCommandCompletePacket());
-        context.write(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
+        if (queryCommandExecutor.isQuery()) {
+            context.write(new PostgreSQLCommandCompletePacket("SELECT", count, 0));
+        }
+        if (queryCommandExecutor instanceof PostgreSQLComQueryExecutor) {
+            context.write(new PostgreSQLReadyForQueryPacket(backendConnection.getStateHandler().isInTransaction()));
+        }
     }
 }
