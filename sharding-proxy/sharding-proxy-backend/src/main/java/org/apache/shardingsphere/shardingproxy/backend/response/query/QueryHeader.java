@@ -68,7 +68,7 @@ public final class QueryHeader {
     }
     
     private QueryHeader(final ResultSetMetaData resultSetMetaData, final LogicSchema logicSchema, final String columnName, final int columnIndex) throws SQLException {
-        this.columnName = columnName;
+        this.columnName = resultSetMetaData.getColumnName(columnIndex);
         schema = logicSchema.getName();
         columnLabel = resultSetMetaData.getColumnLabel(columnIndex);
         columnLength = resultSetMetaData.getColumnDisplaySize(columnIndex);
