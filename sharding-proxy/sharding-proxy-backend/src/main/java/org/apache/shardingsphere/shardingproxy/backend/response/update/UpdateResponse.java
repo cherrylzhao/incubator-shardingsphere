@@ -39,6 +39,10 @@ public final class UpdateResponse implements BackendResponse {
     private final long lastInsertId;
     
     @Getter
+    @Setter
+    private String generateColumnName;
+    
+    @Getter
     private long updateCount;
     
     @Getter

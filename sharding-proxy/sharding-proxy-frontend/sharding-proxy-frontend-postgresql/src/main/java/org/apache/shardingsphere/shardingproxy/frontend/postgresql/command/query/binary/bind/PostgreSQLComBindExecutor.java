@@ -43,6 +43,7 @@ import org.apache.shardingsphere.shardingproxy.frontend.postgresql.PostgreSQLErr
 import org.apache.shardingsphere.underlying.common.database.type.DatabaseTypes;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,6 +86,12 @@ public final class PostgreSQLComBindExecutor implements QueryCommandExecutor {
             result.add(createErrorPacket((ErrorResponse) backendResponse));
         }
         if (backendResponse instanceof UpdateResponse) {
+            String generateColumnName = ((UpdateResponse) backendResponse).getGenerateColumnName();
+            if (null != generateColumnName) {
+                result.add(new PostgreSQLRowDescriptionPacket(1,
+                    Collections.singletonList(new PostgreSQLColumnDescription(generateColumnName, 1, Types.BIGINT, 18))));
+                result.add(new PostgreSQLDataRowPacket(Collections.singletonList(((UpdateResponse) backendResponse).getLastInsertId())));
+            }
             result.add(createUpdatePacket((UpdateResponse) backendResponse));
         }
         if (backendResponse instanceof QueryResponse) {

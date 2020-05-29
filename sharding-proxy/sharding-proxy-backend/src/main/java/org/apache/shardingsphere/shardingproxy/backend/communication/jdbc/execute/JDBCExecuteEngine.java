@@ -35,9 +35,10 @@ import org.apache.shardingsphere.shardingproxy.backend.response.query.QueryRespo
 import org.apache.shardingsphere.shardingproxy.backend.response.update.UpdateResponse;
 import org.apache.shardingsphere.shardingproxy.context.ShardingProxyContext;
 import org.apache.shardingsphere.sql.parser.binder.statement.SQLStatementContext;
-import org.apache.shardingsphere.sql.parser.sql.statement.dml.DeleteStatement;
+import org.apache.shardingsphere.sql.parser.binder.statement.dml.DeleteStatementContext;
+import org.apache.shardingsphere.sql.parser.binder.statement.dml.InsertStatementContext;
+import org.apache.shardingsphere.sql.parser.binder.statement.dml.UpdateStatementContext;
 import org.apache.shardingsphere.sql.parser.sql.statement.dml.InsertStatement;
-import org.apache.shardingsphere.sql.parser.sql.statement.dml.UpdateStatement;
 import org.apache.shardingsphere.underlying.common.config.properties.ConfigurationPropertyKey;
 import org.apache.shardingsphere.underlying.executor.context.ExecutionContext;
 import org.apache.shardingsphere.underlying.executor.engine.InputGroup;
@@ -85,11 +86,12 @@ public final class JDBCExecuteEngine implements SQLExecuteEngine {
             return getExecuteQueryResponse(((ExecuteQueryResponse) executeResponse).getQueryHeaders(), executeResponses);
         } else {
             UpdateResponse updateResponse = new UpdateResponse(executeResponses);
-            if (sqlStatementContext.getSqlStatement() instanceof InsertStatement) {
+            if (sqlStatementContext instanceof InsertStatementContext) {
                 updateResponse.setType("INSERT");
-            } else if (sqlStatementContext.getSqlStatement() instanceof DeleteStatement) {
+                updateResponse.setGenerateColumnName(inputGroups.iterator().next().getInputs().iterator().next().getStatement().getGeneratedKeys().getMetaData().getColumnName(1));
+            } else if (sqlStatementContext instanceof DeleteStatementContext) {
                 updateResponse.setType("DELETE");
-            } else if (sqlStatementContext.getSqlStatement() instanceof UpdateStatement) {
+            } else if (sqlStatementContext instanceof UpdateStatementContext) {
                 updateResponse.setType("UPDATE");
             }
             return updateResponse;
