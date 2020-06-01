@@ -15,11 +15,13 @@
 # limitations under the License.
 #
 
-# FIXME for compatible with wait-for-it.sh, change from openjdk:8-jdk-alpine to java:8
-FROM java:8
+FROM openjdk:8-jdk-alpine
 
 ARG APP_NAME
+ENV WAIT_VERSION 2.7.2
+
 ADD target/${APP_NAME}.tar.gz /opt
-ADD https://github.com/vishnubob/wait-for-it/blob/master/wait-for-it.sh /opt
-RUN chmod +x /opt/wait-for-it.sh
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
+RUN chmod +x /wait
 RUN mv /opt/${APP_NAME} /opt/shardingsphere-proxy
+ENTRYPOINT /wait && /opt/shardingsphere-proxy/bin/start.sh && tail -f /opt/shardingsphere-proxy/logs/stdout.log
